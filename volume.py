@@ -61,6 +61,21 @@ class Plane(Volume):
         else:
             return self.colour2
 
+class WavyPlane(Volume):
+    def __init__(self, pos, colour1, colour2):
+        self.pos = pos
+        self.colour1 = colour1
+        self.colour2 = colour2
+
+    def SDF(self, castpos):
+        return castpos.z - (self.pos.z + sin(castpos.x * pi) * 0.1 + cos(castpos.y * pi) * 0.1)
+
+    def Colour(self, pos):
+        if floor(pos.x) % 2 != floor(pos.y) % 2:
+            return self.colour1
+        else:
+            return self.colour2
+
 class Torus(Volume):
     def __init__(self, pos, radius, thickness, colour):
         self.pos = pos

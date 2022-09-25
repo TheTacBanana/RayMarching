@@ -1,6 +1,8 @@
+from turtle import color
 import pygame
 from volume import *
 from vec3 import *
+from light import *
 
 camPos = Vector3(0, 0, 0)
 camForward = Vector3(1, 0, 0)
@@ -10,10 +12,15 @@ backgroundColour = Vector3(135,206,235)
 distanceFog = 20
 
 renderres = Vector3(250, 250, 64) # X Res, Y Res, Max Casts
-volumes = [ Plane(Vector3(0,0,-2), Vector3(155,155,155), Vector3(100, 100, 100))]
+volumes = [ WavyPlane(Vector3(0,0,-2), Vector3(155,155,155), Vector3(100, 100, 100))]
+lights = [Light(Vector3(2,0,-1), 100, Vector3(253, 184, 19))]
 
 #volumes.append(SmoothUnion(Sphere(Vector3(1, -0.1, 0), 0.2, Vector3(255, 0, 0)), Sphere(Vector3(1, 0.1, 0), 0.2, Vector3(255, 0, 0)), 0.1))
-volumes.append(WavySphere(Vector3(2, 0, 0), 0.5, 0.01, Vector3(255, 0, 0)))
+#volumes.append(SmoothUnion(Sphere(Vector3(1, -0.1, 0), 0.2, Vector3(255, 0, 0)), Torus(Vector3(1, 0.1, 0), 0.2, 0.1,Vector3(255, 0, 0)), 0.1))
+#volumes.append(WavySphere(Vector3(2, 0, 0), 0.5, 0.01, Vector3(255, 0, 0)))
+volumes.append(Sphere(Vector3(2, 0, 0), 0.2, Vector3(255, 0, 0)))
+volumes.append(Sphere(Vector3(2, 0, 1), 0.5, Vector3(255, 0, 0)))
+#volumes.append(Plane(Vector3(0,0,3), Vector3(155,155,155), Vector3(100, 100, 100)))
 
 window = pygame.display.set_mode((renderres.x, renderres.y))
 pygame.display.set_caption('Ray Marching')
@@ -70,7 +77,10 @@ while running:
 
                 dot = (camPos - pos).unit_vector().dot(normal)
                 normalshading = rawcolour * (0.5 + dot/2)
-                finalcolour = normalshading.clamplerp(backgroundColour, distTravelled / distanceFog).to_tuple()
+
+                lightvalue = min(sum([i.TraceLight(pos, volumes, renderres.z) for i in lights]), 1)
+
+                finalcolour = (normalshading.clamplerp(backgroundColour, distTravelled / distanceFog) * lightvalue).to_tuple()
 
                 window.set_at((x, renderres.y - y), finalcolour)
             else:
