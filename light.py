@@ -1,4 +1,4 @@
-from vec3 import *
+#from vec3 import *
 
 class Light():
     def __init__(self, pos, strength, colour):
@@ -11,7 +11,18 @@ class Light():
         rayDir = (targetPos - self.pos).unit_vector()
         distTravelled = 0
 
-        for _ in range(8 * steps):
+        contribution = 1
+
+        for _ in range(2 * steps):
+            if (distTravelled > targetDistance - 0.01):
+                lightRadius = 800
+                fadeRatio = 1 - min(max(targetDistance / lightRadius, 0), 1)
+
+                distanceFactor = fadeRatio ** 2
+
+                print(contribution * distanceFactor)
+                return contribution * distanceFactor
+
             volumeDistance = 1000
 
             newPos = self.pos + rayDir * distTravelled
@@ -21,12 +32,14 @@ class Light():
                 if newDist < volumeDistance:
                     volumeDistance = newDist
 
-            if (targetDistance - distTravelled < 0.1):
-                return self.strength / (targetDistance ** 2)
+            if (volumeDistance <= 0):
+                return 0
 
-            #print(volumeDistance)
             distTravelled += volumeDistance
+
+            if (volumeDistance < 0.1):
+                contribution = max(0, contribution - volumeDistance)
+
             volumeDistance = 1000
 
-        #print(distTravelled)
-        return 0.35
+        return 0
